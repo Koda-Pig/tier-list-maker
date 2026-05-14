@@ -14,9 +14,15 @@ export type TierListState = {
   placements: Record<string, string[]>
 }
 
-export type TierListAction = { type: 'RESET' }
+export type TierListAction =
+  | { type: 'SET_TITLE'; title: string }
+  | { type: 'ADD_ITEM'; label: string }
+  | { type: 'REMOVE_ITEM'; itemId: string }
+  | { type: 'RESET' }
 
 export const DEFAULT_TITLE = 'Untitled tier list'
+export const TITLE_MAX_LENGTH = 60
+export const ITEM_LABEL_MAX_LENGTH = 50
 
 export const TIER_PALETTE: Tier[] = [
   { id: 'tier-s', label: 'S', color: '#ff6b5f' },
@@ -47,14 +53,65 @@ export function createInitialTierListState(): TierListState {
 
 export const initialTierListState = createInitialTierListState()
 
+export function sanitizeTitle(title: string): string {
+  return title.replace(/[\r\n]+/g, ' ').slice(0, TITLE_MAX_LENGTH)
+}
+
+export function sanitizeItemLabel(label: string): string {
+  return label.replace(/[\r\n]+/g, ' ').trim().slice(0, ITEM_LABEL_MAX_LENGTH)
+}
+
 export function tierListReducer(
-  _state: TierListState,
+  state: TierListState,
   action: TierListAction,
 ): TierListState {
   switch (action.type) {
+    case 'SET_TITLE':
+      return {
+        ...state,
+        title: sanitizeTitle(action.title),
+      }
+    case 'ADD_ITEM': {
+      const label = sanitizeItemLabel(action.label)
+
+      if (label.length === 0) {
+        return state
+      }
+
+      const id = crypto.randomUUID()
+
+      return {
+        ...state,
+        items: {
+          ...state.items,
+          [id]: { id, label },
+        },
+        unranked: [...state.unranked, id],
+      }
+    }
+    case 'REMOVE_ITEM': {
+      if (!state.items[action.itemId]) {
+        return state
+      }
+
+      const items = { ...state.items }
+      delete items[action.itemId]
+
+      return {
+        ...state,
+        items,
+        unranked: state.unranked.filter((itemId) => itemId !== action.itemId),
+        placements: Object.fromEntries(
+          Object.entries(state.placements).map(([tierId, itemIds]) => [
+            tierId,
+            itemIds.filter((itemId) => itemId !== action.itemId),
+          ]),
+        ),
+      }
+    }
     case 'RESET':
       return createInitialTierListState()
     default:
-      return _state
+      return state
   }
 }
