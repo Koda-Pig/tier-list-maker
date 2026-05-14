@@ -1,8 +1,15 @@
 import { useReducer, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
 import {
+  SortableDropZone,
+  SortableItem,
+  TierListDragContext,
+  type SortableItemBindings,
+} from './tier-list/dragCoordinator'
+import {
   ITEM_LABEL_MAX_LENGTH,
   TITLE_MAX_LENGTH,
+  UNRANKED_CONTAINER_ID,
   initialTierListState,
   sanitizeItemLabel,
   tierListReducer,
@@ -117,76 +124,163 @@ function App() {
           </div>
         </section>
 
-        <section aria-label="Tier rows" className="flex flex-col gap-3">
-          {state.tiers.map((tier) => (
-            <TierRow
-              key={tier.id}
-              tier={tier}
-              itemCount={state.placements[tier.id].length}
+        <TierListDragContext
+          state={state}
+          dispatch={dispatch}
+          renderOverlay={(item, containerId) => (
+            <ItemPill
+              item={item}
+              tone={getPillTone(state.tiers, containerId)}
+              hideRemove
+              isOverlay
             />
-          ))}
-        </section>
+          )}
+        >
+          <section aria-label="Tier rows" className="flex flex-col gap-3">
+            {state.tiers.map((tier) => (
+              <TierRow
+                key={tier.id}
+                tier={tier}
+                itemIds={state.placements[tier.id] ?? []}
+                items={state.items}
+                onUnrank={(itemId) =>
+                  dispatch({ type: 'UNRANK_ITEM', itemId })
+                }
+              />
+            ))}
+          </section>
 
-        <section className="rounded-lg border border-white/10 bg-slate-950/70 p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-slate-200">
-              UNRANKED — DRAG INTO TIERS ABOVE
-            </h2>
-            <p className="rounded-full border border-white/10 px-3 py-1 text-sm text-slate-400">
-              {state.unranked.length} items
-            </p>
-          </div>
-          <div
-            aria-label="Unranked staging area"
-            className="flex min-h-28 flex-wrap items-start gap-2 rounded-lg border border-dashed border-slate-500/70 bg-slate-900/45 p-3"
-          >
-            {state.unranked.map((itemId) => {
-              const item = state.items[itemId]
-
-              if (!item) {
-                return null
-              }
-
-              return (
-                <ItemPill
-                  key={item.id}
-                  item={item}
-                  onRemove={() =>
-                    dispatch({ type: 'REMOVE_ITEM', itemId: item.id })
-                  }
-                />
-              )
-            })}
-          </div>
-        </section>
+          <UnrankedSection
+            itemIds={state.unranked}
+            items={state.items}
+            onRemove={(itemId) => dispatch({ type: 'REMOVE_ITEM', itemId })}
+          />
+        </TierListDragContext>
       </div>
     </main>
   )
 }
 
+type ItemPillTone = { kind: 'neutral' } | { kind: 'tier'; color: string }
+
 function ItemPill({
   item,
+  tone = { kind: 'neutral' },
   onRemove,
+  removeLabel,
+  drag,
+  hideRemove = false,
+  isOverlay = false,
 }: {
   item: Item
-  onRemove: () => void
+  tone?: ItemPillTone
+  onRemove?: () => void
+  removeLabel?: string
+  drag?: SortableItemBindings
+  hideRemove?: boolean
+  isOverlay?: boolean
 }) {
+  const pillStyle: CSSProperties = {
+    ...drag?.style,
+    ...(tone.kind === 'tier' ? pillColorStyle(tone.color) : {}),
+  }
+  const toneClass =
+    tone.kind === 'tier'
+      ? 'border-white/20 bg-[var(--pill-color)] text-slate-950'
+      : 'border-white/10 bg-slate-800 text-slate-100'
+  const removeControlClass =
+    tone.kind === 'tier'
+      ? 'text-slate-900/70 hover:bg-black/10 hover:text-slate-950 focus:bg-black/10 focus:text-slate-950 focus:ring-slate-900/30'
+      : 'text-slate-400 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:ring-violet-300/50'
+
   return (
-    <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-slate-800 px-3 py-2 text-sm font-medium text-slate-100 shadow-sm shadow-black/20">
+    <span
+      ref={drag?.setNodeRef}
+      data-item-id={item.id}
+      style={pillStyle}
+      className={[
+        'inline-flex max-w-full touch-none select-none items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium shadow-sm shadow-black/20 outline-none transition focus-visible:ring-2 focus-visible:ring-violet-300/70',
+        toneClass,
+        drag ? 'cursor-grab active:cursor-grabbing' : '',
+        drag?.isDragging ? 'opacity-30' : '',
+        isOverlay ? 'cursor-grabbing shadow-2xl shadow-black/35' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      {...(drag?.attributes ?? {})}
+      {...(drag?.listeners ?? {})}
+    >
       <span className="truncate">{item.label}</span>
-      <button
-        type="button"
-        aria-label={`Remove ${item.label}`}
-        className="-mr-1 grid size-6 shrink-0 place-items-center rounded-full text-lg leading-none text-slate-400 outline-none transition hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:ring-2 focus:ring-violet-300/50"
-        onClick={onRemove}
-      >
-        ×
-      </button>
+      {hideRemove ? null : onRemove ? (
+        <button
+          type="button"
+          aria-label={removeLabel ?? `Remove ${item.label}`}
+          className={[
+            '-mr-1 grid size-6 shrink-0 place-items-center rounded-full text-lg leading-none outline-none transition focus:ring-2',
+            removeControlClass,
+          ].join(' ')}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation()
+            onRemove()
+          }}
+        >
+          ×
+        </button>
+      ) : (
+        <span
+          aria-hidden="true"
+          className={[
+            '-mr-1 grid size-6 shrink-0 place-items-center rounded-full text-lg leading-none',
+            tone.kind === 'tier' ? 'text-slate-900/60' : 'text-slate-400',
+          ].join(' ')}
+        >
+          ×
+        </span>
+      )}
     </span>
   )
 }
 
-function TierRow({ tier, itemCount }: { tier: Tier; itemCount: number }) {
+function SortableItemPill({
+  item,
+  containerId,
+  tone,
+  onRemove,
+  removeLabel,
+}: {
+  item: Item
+  containerId: string
+  tone: ItemPillTone
+  onRemove: () => void
+  removeLabel: string
+}) {
+  return (
+    <SortableItem itemId={item.id} containerId={containerId}>
+      {(drag) => (
+        <ItemPill
+          item={item}
+          tone={tone}
+          onRemove={onRemove}
+          removeLabel={removeLabel}
+          drag={drag}
+        />
+      )}
+    </SortableItem>
+  )
+}
+
+function TierRow({
+  tier,
+  itemIds,
+  items,
+  onUnrank,
+}: {
+  tier: Tier
+  itemIds: string[]
+  items: Record<string, Item>
+  onUnrank: (itemId: string) => void
+}) {
   return (
     <article className="grid grid-cols-[4.5rem_minmax(0,1fr)] overflow-hidden rounded-lg border border-white/10 bg-slate-950/75">
       <div
@@ -195,21 +289,100 @@ function TierRow({ tier, itemCount }: { tier: Tier; itemCount: number }) {
       >
         {tier.label}
       </div>
-      <div
-        aria-label={`${tier.label} tier drop zone`}
-        className="min-h-20 border-l border-white/10 bg-slate-900/45 p-3"
+      <SortableDropZone
+        containerId={tier.id}
+        itemIds={itemIds}
+        ariaLabel={`${tier.label} tier drop zone`}
+        className="flex min-h-20 flex-wrap items-start gap-2 border-l border-white/10 bg-slate-900/45 p-3 transition data-[over=true]:bg-slate-800/75 data-[over=true]:ring-2 data-[over=true]:ring-violet-300/30"
       >
         <span className="sr-only">
-          {itemCount} items in tier {tier.label}
+          {itemIds.length} items in tier {tier.label}
         </span>
-      </div>
+        {itemIds.map((itemId) => {
+          const item = items[itemId]
+
+          if (!item) {
+            return null
+          }
+
+          return (
+            <SortableItemPill
+              key={item.id}
+              item={item}
+              containerId={tier.id}
+              tone={{ kind: 'tier', color: tier.color }}
+              onRemove={() => onUnrank(item.id)}
+              removeLabel={`Move ${item.label} back to unranked`}
+            />
+          )
+        })}
+      </SortableDropZone>
     </article>
   )
+}
+
+function UnrankedSection({
+  itemIds,
+  items,
+  onRemove,
+}: {
+  itemIds: string[]
+  items: Record<string, Item>
+  onRemove: (itemId: string) => void
+}) {
+  return (
+    <section className="rounded-lg border border-white/10 bg-slate-950/70 p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-slate-200">
+          UNRANKED — DRAG INTO TIERS ABOVE
+        </h2>
+        <p className="rounded-full border border-white/10 px-3 py-1 text-sm text-slate-400">
+          {itemIds.length} items
+        </p>
+      </div>
+      <SortableDropZone
+        containerId={UNRANKED_CONTAINER_ID}
+        itemIds={itemIds}
+        ariaLabel="Unranked staging area"
+        className="flex min-h-28 flex-wrap items-start gap-2 rounded-lg border border-dashed border-slate-500/70 bg-slate-900/45 p-3 transition data-[over=true]:border-violet-300/80 data-[over=true]:bg-slate-800/75 data-[over=true]:ring-2 data-[over=true]:ring-violet-300/30"
+      >
+        {itemIds.map((itemId) => {
+          const item = items[itemId]
+
+          if (!item) {
+            return null
+          }
+
+          return (
+            <SortableItemPill
+              key={item.id}
+              item={item}
+              containerId={UNRANKED_CONTAINER_ID}
+              tone={{ kind: 'neutral' }}
+              onRemove={() => onRemove(item.id)}
+              removeLabel={`Remove ${item.label}`}
+            />
+          )
+        })}
+      </SortableDropZone>
+    </section>
+  )
+}
+
+function getPillTone(tiers: Tier[], containerId: string | null): ItemPillTone {
+  const tier = tiers.find((candidate) => candidate.id === containerId)
+  return tier ? { kind: 'tier', color: tier.color } : { kind: 'neutral' }
 }
 
 function tierColorStyle(color: string): CSSProperties {
   return {
     '--tier-color': color,
+  } as CSSProperties
+}
+
+function pillColorStyle(color: string): CSSProperties {
+  return {
+    '--pill-color': color,
   } as CSSProperties
 }
 
