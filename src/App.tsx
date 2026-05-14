@@ -1,5 +1,5 @@
-import { useReducer, useState } from "react";
-import type { CSSProperties } from "react";
+import { Minus, X } from "lucide-react";
+import { useReducer, useRef, useState, type CSSProperties } from "react";
 import {
   SortableDropZone,
   SortableItem,
@@ -22,6 +22,7 @@ import {
 function App() {
   const [state, dispatch] = useReducer(tierListReducer, initialTierListState);
   const [newItemLabel, setNewItemLabel] = useState("");
+  const newItemInputRef = useRef<HTMLInputElement>(null);
   const totalItems = Object.keys(state.items).length;
   const rankedItems = state.tiers.reduce(
     (count, tier) => count + (state.placements[tier.id]?.length ?? 0),
@@ -43,6 +44,7 @@ function App() {
 
     dispatch({ type: "ADD_ITEM", label });
     setNewItemLabel("");
+    newItemInputRef.current?.focus();
   }
 
   function handleReset() {
@@ -86,6 +88,7 @@ function App() {
               onSubmit={handleAddItem}
             >
               <input
+                ref={newItemInputRef}
                 aria-label="Item name"
                 className="h-11 min-w-0 rounded-lg border border-white/10 bg-white/4 px-4 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-violet-400/80 focus:ring-4 focus:ring-violet-400/15 focus-visible:ring-4 focus-visible:ring-violet-400/20"
                 maxLength={ITEM_LABEL_MAX_LENGTH}
@@ -244,7 +247,7 @@ function ItemPill({
             onRemove();
           }}
         >
-          ×
+          <X aria-hidden="true" className="size-4" strokeWidth={2.5} />
         </button>
       ) : (
         <span
@@ -318,7 +321,7 @@ function TierRow({
             className="absolute right-1 top-1 grid size-7 place-items-center rounded-full bg-slate-950/15 text-lg font-semibold leading-none text-slate-950 outline-none transition hover:bg-slate-950/25 focus:ring-2 focus:ring-slate-950/35 focus-visible:ring-2 focus-visible:ring-slate-950/50 sm:right-1.5 sm:top-1.5"
             onClick={onRemoveTier}
           >
-            −
+            <Minus aria-hidden="true" className="size-4" strokeWidth={2.5} />
           </button>
         ) : null}
       </div>
