@@ -45,6 +45,19 @@ function App() {
     setNewItemLabel('')
   }
 
+  function handleReset() {
+    const shouldReset = window.confirm(
+      'Reset this tier list? This cannot be undone in this session.',
+    )
+
+    if (!shouldReset) {
+      return
+    }
+
+    dispatch({ type: 'RESET' })
+    setNewItemLabel('')
+  }
+
   return (
     <main className="min-h-svh px-4 py-5 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
@@ -99,8 +112,8 @@ function App() {
               </button>
               <button
                 type="button"
-                className="h-11 rounded-lg border border-white/10 bg-white/[0.04] px-5 font-medium text-slate-400 disabled:cursor-not-allowed"
-                disabled
+                className="h-11 rounded-lg border border-white/10 bg-white/[0.04] px-5 font-medium text-slate-100 outline-none transition hover:bg-white/[0.08] focus:ring-4 focus:ring-violet-400/15"
+                onClick={handleReset}
               >
                 Reset
               </button>
