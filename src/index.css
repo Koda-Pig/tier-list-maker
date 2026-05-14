@@ -1,7 +1,7 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  color-scheme: dark;
   font-family:
     Inter,
     ui-sans-serif,
@@ -14,8 +14,9 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #07070b;
-  color: #f8fafc;
+  color-scheme: light;
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 * {
@@ -25,16 +26,23 @@
 html {
   min-width: 320px;
   min-height: 100%;
-  background: #07070b;
+  background: #f1f5f9;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100svh;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(7, 7, 11, 1) 52%),
-    #07070b;
+  background: #f1f5f9;
+}
+
+html.dark {
+  color-scheme: dark;
+  background: #07070b;
+}
+
+html.dark body {
+  background: #07070b;
 }
 
 #root {
