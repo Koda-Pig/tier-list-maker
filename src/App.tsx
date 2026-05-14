@@ -98,8 +98,8 @@ function App() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
         <header className="rounded-lg border border-slate-300/70 bg-white/85 p-5 shadow-xl shadow-slate-300/35 backdrop-blur transition-colors dark:border-white/10 dark:bg-slate-950/80 dark:shadow-black/30">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h1 className="text-2xl font-medium text-amber-700 dark:text-amber-300">
-              Tier list
+            <h1 className="font-medium text-amber-700 dark:text-amber-300">
+              Tier List Maker
             </h1>
             <button
               type="button"
@@ -118,7 +118,7 @@ function App() {
             <div className="min-w-0">
               <input
                 aria-label="Tier list title"
-                className="block w-full min-w-0 rounded-md border border-transparent bg-transparent px-0 py-1 text-3xl font-semibold leading-tight text-slate-900 outline-none transition sm:text-4xl focus:border-amber-500/70 focus:bg-slate-100/90 focus:px-3 focus:ring-4 focus:ring-amber-500/15 focus-visible:ring-4 focus-visible:ring-amber-500/20 dark:text-white dark:focus:border-amber-400/70 dark:focus:bg-white/3 dark:focus:ring-amber-400/15 dark:focus-visible:ring-amber-400/20"
+                className="block w-full min-w-0 rounded-md border border-transparent bg-transparent px-0 py-1 text-2xl placeholder:text-2xl font-semibold leading-tight text-slate-900 outline-none transition sm:text-3xl focus:border-amber-500/70 focus:bg-slate-100/90 focus:px-3 focus:ring-4 focus:ring-amber-500/15 focus-visible:ring-4 focus-visible:ring-amber-500/20 dark:text-white dark:focus:border-amber-400/70 dark:focus:bg-white/3 dark:focus:ring-amber-400/15 dark:focus-visible:ring-amber-400/20"
                 maxLength={TITLE_MAX_LENGTH}
                 value={state.title}
                 onChange={(event) =>
