@@ -69,7 +69,7 @@ function App() {
               </p>
               <input
                 aria-label="Tier list title"
-                className="block w-full min-w-0 rounded-md border border-transparent bg-transparent px-0 py-1 text-4xl font-semibold leading-tight text-white outline-none transition focus:border-violet-400/70 focus:bg-white/[0.03] focus:px-3 focus:ring-4 focus:ring-violet-400/15"
+                className="block w-full min-w-0 rounded-md border border-transparent bg-transparent px-0 py-1 text-3xl font-semibold leading-tight text-white outline-none transition sm:text-4xl focus:border-violet-400/70 focus:bg-white/[0.03] focus:px-3 focus:ring-4 focus:ring-violet-400/15 focus-visible:ring-4 focus-visible:ring-violet-400/20"
                 maxLength={TITLE_MAX_LENGTH}
                 value={state.title}
                 onChange={(event) =>
@@ -82,12 +82,12 @@ function App() {
             </div>
 
             <form
-              className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] lg:w-[48rem]"
+              className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto] sm:items-center lg:w-[48rem]"
               onSubmit={handleAddItem}
             >
               <input
                 aria-label="Item name"
-                className="h-11 min-w-0 rounded-lg border border-white/10 bg-white/[0.04] px-4 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-violet-400/80 focus:ring-4 focus:ring-violet-400/15"
+                className="h-11 min-w-0 rounded-lg border border-white/10 bg-white/[0.04] px-4 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-violet-400/80 focus:ring-4 focus:ring-violet-400/15 focus-visible:ring-4 focus-visible:ring-violet-400/20"
                 maxLength={ITEM_LABEL_MAX_LENGTH}
                 placeholder="Item name"
                 value={newItemLabel}
@@ -97,14 +97,14 @@ function App() {
               />
               <button
                 type="submit"
-                className="h-11 rounded-lg border border-violet-300/25 bg-violet-400 px-5 font-medium text-slate-950 outline-none transition hover:bg-violet-300 focus:ring-4 focus:ring-violet-400/20 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/[0.04] disabled:text-slate-500"
+                className="h-11 rounded-lg border border-violet-300/25 bg-violet-400 px-5 font-medium text-slate-950 outline-none transition hover:bg-violet-300 focus:ring-4 focus:ring-violet-400/20 focus-visible:ring-4 focus-visible:ring-violet-400/30 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/[0.04] disabled:text-slate-500"
                 disabled={!canAddItem}
               >
                 Add
               </button>
               <button
                 type="button"
-                className="h-11 rounded-lg border border-white/10 bg-white/[0.04] px-5 font-medium text-slate-100 outline-none transition hover:bg-white/[0.08] focus:ring-4 focus:ring-violet-400/15 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:bg-white/[0.04]"
+                className="h-11 rounded-lg border border-white/10 bg-white/[0.04] px-5 font-medium text-slate-100 outline-none transition hover:bg-white/[0.08] focus:ring-4 focus:ring-violet-400/15 focus-visible:ring-4 focus-visible:ring-violet-400/20 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:bg-white/[0.04]"
                 disabled={!canAddAnotherTier}
                 onClick={() => dispatch({ type: 'ADD_TIER' })}
               >
@@ -112,7 +112,7 @@ function App() {
               </button>
               <button
                 type="button"
-                className="h-11 rounded-lg border border-white/10 bg-white/[0.04] px-5 font-medium text-slate-100 outline-none transition hover:bg-white/[0.08] focus:ring-4 focus:ring-violet-400/15"
+                className="h-11 rounded-lg border border-white/10 bg-white/[0.04] px-5 font-medium text-slate-100 outline-none transition hover:bg-white/[0.08] focus:ring-4 focus:ring-violet-400/15 focus-visible:ring-4 focus-visible:ring-violet-400/20"
                 onClick={handleReset}
               >
                 Reset
@@ -307,9 +307,9 @@ function TierRow({
   onUnrank: (itemId: string) => void
 }) {
   return (
-    <article className="grid grid-cols-[4.5rem_minmax(0,1fr)] overflow-hidden rounded-lg border border-white/10 bg-slate-950/75">
+    <article className="grid grid-cols-[3.5rem_minmax(0,1fr)] overflow-hidden rounded-lg border border-white/10 bg-slate-950/75 sm:grid-cols-[4.5rem_minmax(0,1fr)]">
       <div
-        className="relative flex min-h-20 items-center justify-center bg-[var(--tier-color)] text-3xl font-bold text-slate-950 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.28)]"
+        className="relative flex min-h-20 items-center justify-center bg-[var(--tier-color)] text-2xl font-bold text-slate-950 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.28)] sm:text-3xl"
         style={tierColorStyle(tier.color)}
       >
         <span>{tier.label}</span>
@@ -317,7 +317,7 @@ function TierRow({
           <button
             type="button"
             aria-label={`Remove empty ${tier.label} tier`}
-            className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-full bg-slate-950/15 text-lg font-semibold leading-none text-slate-950 outline-none transition hover:bg-slate-950/25 focus:ring-2 focus:ring-slate-950/35"
+            className="absolute right-1 top-1 grid size-7 place-items-center rounded-full bg-slate-950/15 text-lg font-semibold leading-none text-slate-950 outline-none transition hover:bg-slate-950/25 focus:ring-2 focus:ring-slate-950/35 focus-visible:ring-2 focus-visible:ring-slate-950/50 sm:right-1.5 sm:top-1.5"
             onClick={onRemoveTier}
           >
             −
