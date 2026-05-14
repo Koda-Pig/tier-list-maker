@@ -180,12 +180,13 @@ function App() {
               {progressPercent}%
             </p>
           </div>
-          <div className="h-3 overflow-hidden rounded-full bg-slate-300 dark:bg-slate-800">
-            <div
-              className="h-full rounded-full bg-amber-400 transition-[width]"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
+          <progress
+            className="h-3 w-full overflow-hidden rounded-full [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-amber-400 [&::-moz-progress-bar]:transition-[width] [&::-moz-progress-bar]:duration-300 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-slate-300 [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-amber-400 [&::-webkit-progress-value]:transition-[width] [&::-webkit-progress-value]:duration-300 dark:[&::-webkit-progress-bar]:bg-slate-800"
+            value={rankedItems}
+            max={Math.max(totalItems, 1)}
+          >
+            {progressPercent}%
+          </progress>
         </section>
 
         <TierListDragContext
