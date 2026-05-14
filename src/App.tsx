@@ -7,6 +7,17 @@ import {
   type CSSProperties
 } from "react";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
+import {
   SortableDropZone,
   SortableItem,
   TierListDragContext,
@@ -77,15 +88,7 @@ function App() {
     newItemInputRef.current?.focus();
   }
 
-  function handleReset() {
-    const shouldReset = window.confirm(
-      "Reset this tier list? This cannot be undone in this session."
-    );
-
-    if (!shouldReset) {
-      return;
-    }
-
+  function handleConfirmReset() {
     dispatch({ type: "RESET" });
     setNewItemLabel("");
   }
@@ -157,13 +160,34 @@ function App() {
               >
                 + Tier
               </button>
-              <button
-                type="button"
-                className="h-11 rounded-lg border border-slate-300 bg-white px-5 font-medium text-slate-900 outline-none transition hover:bg-slate-50 focus:ring-4 focus:ring-amber-500/15 focus-visible:ring-4 focus-visible:ring-amber-500/20 dark:border-white/10 dark:bg-white/4 dark:text-slate-100 dark:hover:bg-white/8 dark:focus:ring-amber-400/15 dark:focus-visible:ring-amber-400/20"
-                onClick={handleReset}
-              >
-                Reset
-              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="h-11 rounded-lg border border-slate-300 bg-white px-5 font-medium text-slate-900 outline-none transition hover:bg-slate-50 focus:ring-4 focus:ring-amber-500/15 focus-visible:ring-4 focus-visible:ring-amber-500/20 dark:border-white/10 dark:bg-white/4 dark:text-slate-100 dark:hover:bg-white/8 dark:focus:ring-amber-400/15 dark:focus-visible:ring-amber-400/20"
+                  >
+                    Reset
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Reset this tier list?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This clears all tiers and items. This cannot be undone in
+                      this session.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      variant="destructive"
+                      onClick={handleConfirmReset}
+                    >
+                      Reset list
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </form>
           </div>
         </header>
