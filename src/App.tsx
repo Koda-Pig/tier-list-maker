@@ -94,14 +94,28 @@ function App() {
     <main className="min-h-svh bg-linear-to-b from-slate-100 to-slate-200 px-4 py-5 text-slate-900 transition-colors dark:from-slate-900 dark:to-[#07070b] dark:text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
         <header className="rounded-lg border border-slate-300/70 bg-white/85 p-5 shadow-xl shadow-slate-300/35 backdrop-blur transition-colors dark:border-white/10 dark:bg-slate-950/80 dark:shadow-black/30">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h1 className="text-2xl font-medium text-amber-700 dark:text-amber-300">
+              Tier list
+            </h1>
+            <button
+              type="button"
+              aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
+              className="grid h-9 w-9 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 outline-none transition hover:bg-slate-50 focus:ring-4 focus:ring-amber-500/15 focus-visible:ring-4 focus-visible:ring-amber-500/20 dark:border-white/10 dark:bg-white/4 dark:text-slate-100 dark:hover:bg-white/8 dark:focus:ring-amber-400/15 dark:focus-visible:ring-amber-400/20"
+              onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+            >
+              {isDarkMode ? (
+                <Sun aria-hidden="true" className="size-4" />
+              ) : (
+                <Moon aria-hidden="true" className="size-4" />
+              )}
+            </button>
+          </div>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <p className="mb-2 text-sm font-medium text-violet-700 dark:text-violet-300">
-                Tier list
-              </p>
               <input
                 aria-label="Tier list title"
-                className="block w-full min-w-0 rounded-md border border-transparent bg-transparent px-0 py-1 text-3xl font-semibold leading-tight text-slate-900 outline-none transition sm:text-4xl focus:border-violet-500/70 focus:bg-slate-100/90 focus:px-3 focus:ring-4 focus:ring-violet-500/15 focus-visible:ring-4 focus-visible:ring-violet-500/20 dark:text-white dark:focus:border-violet-400/70 dark:focus:bg-white/3 dark:focus:ring-violet-400/15 dark:focus-visible:ring-violet-400/20"
+                className="block w-full min-w-0 rounded-md border border-transparent bg-transparent px-0 py-1 text-3xl font-semibold leading-tight text-slate-900 outline-none transition sm:text-4xl focus:border-amber-500/70 focus:bg-slate-100/90 focus:px-3 focus:ring-4 focus:ring-amber-500/15 focus-visible:ring-4 focus-visible:ring-amber-500/20 dark:text-white dark:focus:border-amber-400/70 dark:focus:bg-white/3 dark:focus:ring-amber-400/15 dark:focus-visible:ring-amber-400/20"
                 maxLength={TITLE_MAX_LENGTH}
                 value={state.title}
                 onChange={(event) =>
@@ -120,7 +134,7 @@ function App() {
               <input
                 ref={newItemInputRef}
                 aria-label="Item name"
-                className="h-11 min-w-0 rounded-lg border border-slate-300 bg-white px-4 text-slate-900 outline-none transition placeholder:text-slate-500 focus:border-violet-500/80 focus:ring-4 focus:ring-violet-500/15 focus-visible:ring-4 focus-visible:ring-violet-500/20 dark:border-white/10 dark:bg-white/4 dark:text-slate-100 dark:focus:border-violet-400/80 dark:focus:ring-violet-400/15 dark:focus-visible:ring-violet-400/20"
+                className="h-11 min-w-0 rounded-lg border border-slate-300 bg-white px-4 text-slate-900 outline-none transition placeholder:text-slate-500 focus:border-amber-500/80 focus:ring-4 focus:ring-amber-500/15 focus-visible:ring-4 focus-visible:ring-amber-500/20 dark:border-white/10 dark:bg-white/4 dark:text-slate-100 dark:focus:border-amber-400/80 dark:focus:ring-amber-400/15 dark:focus-visible:ring-amber-400/20"
                 maxLength={ITEM_LABEL_MAX_LENGTH}
                 placeholder="Item name"
                 value={newItemLabel}
@@ -130,14 +144,14 @@ function App() {
               />
               <button
                 type="submit"
-                className="h-11 rounded-lg border border-violet-600/20 bg-violet-500 px-5 font-medium text-white outline-none transition hover:bg-violet-400 focus:ring-4 focus:ring-violet-500/20 focus-visible:ring-4 focus-visible:ring-violet-500/30 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-400 dark:border-violet-300/25 dark:bg-violet-400 dark:text-slate-950 dark:hover:bg-violet-300 dark:disabled:border-white/10 dark:disabled:bg-white/4 dark:disabled:text-slate-500"
+                className="h-11 rounded-lg border border-amber-600/20 bg-amber-500 px-5 font-medium text-white outline-none transition hover:bg-amber-400 focus:ring-4 focus:ring-amber-500/20 focus-visible:ring-4 focus-visible:ring-amber-500/30 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-400 dark:border-amber-300/25 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300 dark:disabled:border-white/10 dark:disabled:bg-white/4 dark:disabled:text-slate-500"
                 disabled={!canAddItem}
               >
                 Add
               </button>
               <button
                 type="button"
-                className="h-11 rounded-lg border border-slate-300 bg-white px-5 font-medium text-slate-900 outline-none transition hover:bg-slate-50 focus:ring-4 focus:ring-violet-500/15 focus-visible:ring-4 focus-visible:ring-violet-500/20 disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-white dark:border-white/10 dark:bg-white/4 dark:text-slate-100 dark:hover:bg-white/8 dark:focus:ring-violet-400/15 dark:focus-visible:ring-violet-400/20 dark:disabled:text-slate-500 dark:disabled:hover:bg-white/4"
+                className="h-11 rounded-lg border border-slate-300 bg-white px-5 font-medium text-slate-900 outline-none transition hover:bg-slate-50 focus:ring-4 focus:ring-amber-500/15 focus-visible:ring-4 focus-visible:ring-amber-500/20 disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-white dark:border-white/10 dark:bg-white/4 dark:text-slate-100 dark:hover:bg-white/8 dark:focus:ring-amber-400/15 dark:focus-visible:ring-amber-400/20 dark:disabled:text-slate-500 dark:disabled:hover:bg-white/4"
                 disabled={!canAddAnotherTier}
                 onClick={() => dispatch({ type: "ADD_TIER" })}
               >
@@ -145,22 +159,10 @@ function App() {
               </button>
               <button
                 type="button"
-                className="h-11 rounded-lg border border-slate-300 bg-white px-5 font-medium text-slate-900 outline-none transition hover:bg-slate-50 focus:ring-4 focus:ring-violet-500/15 focus-visible:ring-4 focus-visible:ring-violet-500/20 dark:border-white/10 dark:bg-white/4 dark:text-slate-100 dark:hover:bg-white/8 dark:focus:ring-violet-400/15 dark:focus-visible:ring-violet-400/20"
+                className="h-11 rounded-lg border border-slate-300 bg-white px-5 font-medium text-slate-900 outline-none transition hover:bg-slate-50 focus:ring-4 focus:ring-amber-500/15 focus-visible:ring-4 focus-visible:ring-amber-500/20 dark:border-white/10 dark:bg-white/4 dark:text-slate-100 dark:hover:bg-white/8 dark:focus:ring-amber-400/15 dark:focus-visible:ring-amber-400/20"
                 onClick={handleReset}
               >
                 Reset
-              </button>
-              <button
-                type="button"
-                aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
-                className="grid h-11 w-11 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 outline-none transition hover:bg-slate-50 focus:ring-4 focus:ring-violet-500/15 focus-visible:ring-4 focus-visible:ring-violet-500/20 dark:border-white/10 dark:bg-white/4 dark:text-slate-100 dark:hover:bg-white/8 dark:focus:ring-violet-400/15 dark:focus-visible:ring-violet-400/20"
-                onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-              >
-                {isDarkMode ? (
-                  <Sun aria-hidden="true" className="size-4" />
-                ) : (
-                  <Moon aria-hidden="true" className="size-4" />
-                )}
               </button>
             </form>
           </div>
@@ -174,13 +176,13 @@ function App() {
             <p className="text-base font-medium text-slate-900 dark:text-slate-100">
               {rankedItems} of {totalItems} ranked
             </p>
-            <p className="text-base font-semibold text-violet-700 dark:text-violet-200">
+            <p className="text-base font-semibold text-amber-700 dark:text-amber-200">
               {progressPercent}%
             </p>
           </div>
           <div className="h-3 overflow-hidden rounded-full bg-slate-300 dark:bg-slate-800">
             <div
-              className="h-full rounded-full bg-violet-400 transition-[width]"
+              className="h-full rounded-full bg-amber-400 transition-[width]"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -255,7 +257,7 @@ function ItemPill({
   const removeControlClass =
     tone.kind === "tier"
       ? "text-slate-900/70 hover:bg-black/10 hover:text-slate-950 focus:bg-black/10 focus:text-slate-950 focus:ring-slate-900/30"
-      : "text-slate-500 hover:bg-slate-200 hover:text-slate-900 focus:bg-slate-200 focus:text-slate-900 focus:ring-violet-400/50 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white dark:focus:bg-white/10 dark:focus:text-white dark:focus:ring-violet-300/50";
+      : "text-slate-500 hover:bg-slate-200 hover:text-slate-900 focus:bg-slate-200 focus:text-slate-900 focus:ring-amber-400/50 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white dark:focus:bg-white/10 dark:focus:text-white dark:focus:ring-amber-300/50";
 
   return (
     <span
@@ -263,7 +265,7 @@ function ItemPill({
       data-item-id={item.id}
       style={pillStyle}
       className={[
-        "inline-flex max-w-full touch-none select-none items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium shadow-sm shadow-black/20 outline-none transition focus-visible:ring-2 focus-visible:ring-violet-300/70",
+        "inline-flex max-w-full touch-none select-none items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium shadow-sm shadow-black/20 outline-none transition focus-visible:ring-2 focus-visible:ring-amber-300/70",
         toneClass,
         drag ? "cursor-grab active:cursor-grabbing" : "",
         drag?.isDragging ? "opacity-30" : "",
@@ -296,9 +298,9 @@ function ItemPill({
           aria-hidden="true"
           className={[
             "-mr-1 grid size-6 shrink-0 place-items-center rounded-full text-lg leading-none",
-        tone.kind === "tier"
-          ? "text-slate-900/60"
-          : "text-slate-500 dark:text-slate-400"
+            tone.kind === "tier"
+              ? "text-slate-900/60"
+              : "text-slate-500 dark:text-slate-400"
           ].join(" ")}
         >
           ×
@@ -373,7 +375,7 @@ function TierRow({
         containerId={tier.id}
         itemIds={itemIds}
         ariaLabel={`${tier.label} tier drop zone`}
-        className="flex min-h-20 flex-wrap items-start gap-2 border-l border-slate-300/70 bg-slate-100/85 p-3 transition dark:border-white/10 dark:bg-slate-900/45 data-[over=true]:bg-slate-200/80 dark:data-[over=true]:bg-slate-800/75 data-[over=true]:ring-2 data-[over=true]:ring-violet-300/30"
+        className="flex min-h-20 flex-wrap items-start gap-2 border-l border-slate-300/70 bg-slate-100/85 p-3 transition dark:border-white/10 dark:bg-slate-900/45 data-[over=true]:bg-slate-200/80 dark:data-[over=true]:bg-slate-800/75 data-[over=true]:ring-2 data-[over=true]:ring-amber-300/30"
       >
         <span className="sr-only">
           {itemIds.length} items in tier {tier.label}
@@ -424,7 +426,7 @@ function UnrankedSection({
         containerId={UNRANKED_CONTAINER_ID}
         itemIds={itemIds}
         ariaLabel="Unranked staging area"
-        className="flex min-h-28 flex-wrap items-start gap-2 rounded-lg border border-dashed border-slate-400 bg-slate-100/85 p-3 transition dark:border-slate-500/70 dark:bg-slate-900/45 data-[over=true]:border-violet-400/70 dark:data-[over=true]:border-violet-300/80 data-[over=true]:bg-slate-200/80 dark:data-[over=true]:bg-slate-800/75 data-[over=true]:ring-2 data-[over=true]:ring-violet-300/30"
+        className="flex min-h-28 flex-wrap items-start gap-2 rounded-lg border border-dashed border-slate-400 bg-slate-100/85 p-3 transition dark:border-slate-500/70 dark:bg-slate-900/45 data-[over=true]:border-amber-400/70 dark:data-[over=true]:border-amber-300/80 data-[over=true]:bg-slate-200/80 dark:data-[over=true]:bg-slate-800/75 data-[over=true]:ring-2 data-[over=true]:ring-amber-300/30"
       >
         {itemIds.map((itemId) => {
           const item = items[itemId];
