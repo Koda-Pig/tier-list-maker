@@ -195,7 +195,6 @@ function App() {
             <ItemPill
               item={item}
               tone={getPillTone(state.tiers, containerId)}
-              hideRemove
               isOverlay
             />
           )}
@@ -235,7 +234,6 @@ function ItemPill({
   onRemove,
   removeLabel,
   drag,
-  hideRemove = false,
   isOverlay = false
 }: {
   item: Item;
@@ -243,7 +241,6 @@ function ItemPill({
   onRemove?: () => void;
   removeLabel?: string;
   drag?: SortableItemBindings;
-  hideRemove?: boolean;
   isOverlay?: boolean;
 }) {
   const pillStyle: CSSProperties = {
@@ -277,35 +274,21 @@ function ItemPill({
       {...(drag?.listeners ?? {})}
     >
       <span className="truncate">{item.label}</span>
-      {hideRemove ? null : onRemove ? (
-        <button
-          type="button"
-          aria-label={removeLabel ?? `Remove ${item.label}`}
-          className={[
-            "-mr-1 grid size-6 shrink-0 place-items-center rounded-full text-lg leading-none outline-none transition focus:ring-2",
-            removeControlClass
-          ].join(" ")}
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={(event) => {
-            event.stopPropagation();
-            onRemove();
-          }}
-        >
-          <X aria-hidden="true" className="size-4" strokeWidth={2.5} />
-        </button>
-      ) : (
-        <span
-          aria-hidden="true"
-          className={[
-            "-mr-1 grid size-6 shrink-0 place-items-center rounded-full text-lg leading-none",
-            tone.kind === "tier"
-              ? "text-slate-900/60"
-              : "text-slate-500 dark:text-slate-400"
-          ].join(" ")}
-        >
-          ×
-        </span>
-      )}
+      <button
+        type="button"
+        aria-label={removeLabel ?? `Remove ${item.label}`}
+        className={[
+          "-mr-1 grid size-6 shrink-0 place-items-center rounded-full text-lg leading-none outline-none transition focus:ring-2",
+          removeControlClass
+        ].join(" ")}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onRemove?.();
+        }}
+      >
+        <X aria-hidden="true" className="size-4" strokeWidth={2.5} />
+      </button>
     </span>
   );
 }
