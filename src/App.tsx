@@ -37,26 +37,37 @@ import {
 } from "./tier-list/state";
 
 const THEME_STORAGE_KEY = "tier-list-maker-theme";
-type Theme = "light" | "dark";
+type Theme = "system" | "light" | "dark";
+
+function getPreferredColorScheme(): "light" | "dark" {
+  if (typeof window === "undefined") {
+    return "dark";
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
 
 function App() {
   const [state, dispatch] = useReducer(tierListReducer, initialTierListState);
   const [newItemLabel, setNewItemLabel] = useState("");
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === "undefined") {
-      return "dark";
+      return "system";
     }
 
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
 
-    if (stored === "light" || stored === "dark") {
+    if (stored === "system" || stored === "light" || stored === "dark") {
       return stored;
     }
 
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    return "system";
   });
+  const [preferredColorScheme, setPreferredColorScheme] = useState<
+    "light" | "dark"
+  >(getPreferredColorScheme);
   const newItemInputRef = useRef<HTMLInputElement>(null);
   const totalItems = Object.keys(state.items).length;
   const rankedItems = state.tiers.reduce(
@@ -67,12 +78,32 @@ function App() {
     totalItems === 0 ? 0 : Math.round((rankedItems / totalItems) * 100);
   const canAddItem = sanitizeItemLabel(newItemLabel).length > 0;
   const canAddAnotherTier = canAddTier(state);
-  const isDarkMode = theme === "dark";
+  const isDarkMode =
+    theme === "system" ? preferredColorScheme === "dark" : theme === "dark";
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      setPreferredColorScheme(mediaQuery.matches ? "dark" : "light");
+    };
+
+    handleChange();
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDarkMode);
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    if (theme === "system") {
+      window.localStorage.removeItem(THEME_STORAGE_KEY);
+      return;
+    }
+
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [isDarkMode, theme]);
+  }, [theme]);
 
   function handleAddItem(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
