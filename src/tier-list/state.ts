@@ -19,6 +19,8 @@ export type TierListAction =
   | { type: 'ADD_ITEM'; label: string }
   | { type: 'REMOVE_ITEM'; itemId: string }
   | { type: 'UNRANK_ITEM'; itemId: string }
+  | { type: 'ADD_TIER' }
+  | { type: 'REMOVE_TIER'; tierId: string }
   | {
       type: 'MOVE_ITEM'
       itemId: string
@@ -43,6 +45,11 @@ export const TIER_PALETTE: Tier[] = [
 ]
 
 export const DEFAULT_TIERS = TIER_PALETTE.slice(0, 4)
+const OPTIONAL_TIERS = TIER_PALETTE.slice(DEFAULT_TIERS.length)
+const LAST_TIER_ID = TIER_PALETTE[TIER_PALETTE.length - 1].id
+const TIER_ORDER = new Map(
+  TIER_PALETTE.map((tier, index) => [tier.id, index]),
+)
 
 export function createInitialTierListState(): TierListState {
   const tiers = DEFAULT_TIERS.map((tier) => ({ ...tier }))
@@ -97,6 +104,21 @@ export function findItemContainer(
   return null
 }
 
+export function canAddTier(state: TierListState): boolean {
+  return getNextAddableTier(state) !== null
+}
+
+export function canRemoveTier(
+  state: TierListState,
+  tierId: string,
+): boolean {
+  return (
+    state.tiers.some((tier) => tier.id === tierId) &&
+    OPTIONAL_TIERS.some((tier) => tier.id === tierId) &&
+    (state.placements[tierId]?.length ?? 0) === 0
+  )
+}
+
 function isKnownContainer(state: TierListState, containerId: string): boolean {
   return (
     containerId === UNRANKED_CONTAINER_ID ||
@@ -116,6 +138,24 @@ function clampIndex(index: number, length: number): number {
   }
 
   return Math.min(Math.max(Math.trunc(index), 0), length)
+}
+
+function getNextAddableTier(state: TierListState): Tier | null {
+  if (state.tiers.some((tier) => tier.id === LAST_TIER_ID)) {
+    return null
+  }
+
+  const existingTierIds = new Set(state.tiers.map((tier) => tier.id))
+
+  return OPTIONAL_TIERS.find((tier) => !existingTierIds.has(tier.id)) ?? null
+}
+
+function sortTiersByPaletteOrder(tiers: Tier[]): Tier[] {
+  return [...tiers].sort(
+    (first, second) =>
+      (TIER_ORDER.get(first.id) ?? Number.MAX_SAFE_INTEGER) -
+      (TIER_ORDER.get(second.id) ?? Number.MAX_SAFE_INTEGER),
+  )
 }
 
 export function tierListReducer(
@@ -233,6 +273,36 @@ export function tierListReducer(
       return {
         ...state,
         unranked,
+        placements,
+      }
+    }
+    case 'ADD_TIER': {
+      const tier = getNextAddableTier(state)
+
+      if (tier === null) {
+        return state
+      }
+
+      return {
+        ...state,
+        tiers: sortTiersByPaletteOrder([...state.tiers, { ...tier }]),
+        placements: {
+          ...state.placements,
+          [tier.id]: state.placements[tier.id] ?? [],
+        },
+      }
+    }
+    case 'REMOVE_TIER': {
+      if (!canRemoveTier(state, action.tierId)) {
+        return state
+      }
+
+      const placements = { ...state.placements }
+      delete placements[action.tierId]
+
+      return {
+        ...state,
+        tiers: state.tiers.filter((tier) => tier.id !== action.tierId),
         placements,
       }
     }

@@ -10,6 +10,8 @@ import {
   ITEM_LABEL_MAX_LENGTH,
   TITLE_MAX_LENGTH,
   UNRANKED_CONTAINER_ID,
+  canAddTier,
+  canRemoveTier,
   initialTierListState,
   sanitizeItemLabel,
   tierListReducer,
@@ -28,6 +30,7 @@ function App() {
   const progressPercent =
     totalItems === 0 ? 0 : Math.round((rankedItems / totalItems) * 100)
   const canAddItem = sanitizeItemLabel(newItemLabel).length > 0
+  const canAddAnotherTier = canAddTier(state)
 
   function handleAddItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -88,8 +91,9 @@ function App() {
               </button>
               <button
                 type="button"
-                className="h-11 rounded-lg border border-white/10 bg-white/[0.04] px-5 font-medium text-slate-400 disabled:cursor-not-allowed"
-                disabled
+                className="h-11 rounded-lg border border-white/10 bg-white/[0.04] px-5 font-medium text-slate-100 outline-none transition hover:bg-white/[0.08] focus:ring-4 focus:ring-violet-400/15 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:bg-white/[0.04]"
+                disabled={!canAddAnotherTier}
+                onClick={() => dispatch({ type: 'ADD_TIER' })}
               >
                 + Tier
               </button>
@@ -143,6 +147,10 @@ function App() {
                 tier={tier}
                 itemIds={state.placements[tier.id] ?? []}
                 items={state.items}
+                canRemove={canRemoveTier(state, tier.id)}
+                onRemoveTier={() =>
+                  dispatch({ type: 'REMOVE_TIER', tierId: tier.id })
+                }
                 onUnrank={(itemId) =>
                   dispatch({ type: 'UNRANK_ITEM', itemId })
                 }
@@ -274,20 +282,34 @@ function TierRow({
   tier,
   itemIds,
   items,
+  canRemove,
+  onRemoveTier,
   onUnrank,
 }: {
   tier: Tier
   itemIds: string[]
   items: Record<string, Item>
+  canRemove: boolean
+  onRemoveTier: () => void
   onUnrank: (itemId: string) => void
 }) {
   return (
     <article className="grid grid-cols-[4.5rem_minmax(0,1fr)] overflow-hidden rounded-lg border border-white/10 bg-slate-950/75">
       <div
-        className="flex min-h-20 items-center justify-center bg-[var(--tier-color)] text-3xl font-bold text-slate-950 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.28)]"
+        className="relative flex min-h-20 items-center justify-center bg-[var(--tier-color)] text-3xl font-bold text-slate-950 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.28)]"
         style={tierColorStyle(tier.color)}
       >
-        {tier.label}
+        <span>{tier.label}</span>
+        {canRemove ? (
+          <button
+            type="button"
+            aria-label={`Remove empty ${tier.label} tier`}
+            className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-full bg-slate-950/15 text-lg font-semibold leading-none text-slate-950 outline-none transition hover:bg-slate-950/25 focus:ring-2 focus:ring-slate-950/35"
+            onClick={onRemoveTier}
+          >
+            −
+          </button>
+        ) : null}
       </div>
       <SortableDropZone
         containerId={tier.id}
