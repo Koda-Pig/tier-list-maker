@@ -24,6 +24,7 @@ import {
   type SortableItemBindings
 } from "./tier-list/dragCoordinator";
 import {
+  DEFAULT_TITLE,
   ITEM_LABEL_MAX_LENGTH,
   TITLE_MAX_LENGTH,
   UNRANKED_CONTAINER_ID,
@@ -104,6 +105,11 @@ function App() {
 
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
+
+  useEffect(() => {
+    const nextTitle = state.title.trim();
+    document.title = nextTitle.length > 0 ? nextTitle : DEFAULT_TITLE;
+  }, [state.title]);
 
   function handleAddItem(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
