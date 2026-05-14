@@ -11,91 +11,91 @@ import {
   useSensors,
   type CollisionDetection,
   type DragEndEvent,
-  type DragStartEvent,
-} from '@dnd-kit/core'
+  type DragStartEvent
+} from "@dnd-kit/core";
 import {
   SortableContext,
   rectSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+  useSortable
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
-  type ReactNode,
-} from 'react'
+  type ReactNode
+} from "react";
 import {
   findItemContainer,
   getContainerItemIds,
   type Item,
   type TierListAction,
-  type TierListState,
-} from './state'
+  type TierListState
+} from "./state";
 
 type DragItemData = {
-  kind: 'item'
-  itemId: string
-  containerId: string
-}
+  kind: "item";
+  itemId: string;
+  containerId: string;
+};
 
 type DragContainerData = {
-  kind: 'container'
-  containerId: string
-  itemCount: number
-}
+  kind: "container";
+  containerId: string;
+  itemCount: number;
+};
 
-type DragData = DragItemData | DragContainerData
-type SortableResult = ReturnType<typeof useSortable>
+type DragData = DragItemData | DragContainerData;
+type SortableResult = ReturnType<typeof useSortable>;
 
 export type SortableItemBindings = {
-  setNodeRef: SortableResult['setNodeRef']
-  attributes: SortableResult['attributes']
-  listeners: SortableResult['listeners']
-  style: CSSProperties
-  isDragging: boolean
-}
+  setNodeRef: SortableResult["setNodeRef"];
+  attributes: SortableResult["attributes"];
+  listeners: SortableResult["listeners"];
+  style: CSSProperties;
+  isDragging: boolean;
+};
 
 export function TierListDragContext({
   state,
   dispatch,
   renderOverlay,
-  children,
+  children
 }: {
-  state: TierListState
-  dispatch: (action: TierListAction) => void
-  renderOverlay: (item: Item, containerId: string | null) => ReactNode
-  children: ReactNode
+  state: TierListState;
+  dispatch: (action: TierListAction) => void;
+  renderOverlay: (item: Item, containerId: string | null) => ReactNode;
+  children: ReactNode;
 }) {
-  const [activeItemId, setActiveItemId] = useState<string | null>(null)
-  const stateRef = useRef(state)
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const stateRef = useRef(state);
   useLayoutEffect(() => {
-    stateRef.current = state
-  }, [state])
+    stateRef.current = state;
+  }, [state]);
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 6 },
+      activationConstraint: { distance: 6 }
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 140, tolerance: 8 },
-    }),
-  )
-  const activeItem = activeItemId === null ? null : state.items[activeItemId]
+      activationConstraint: { delay: 140, tolerance: 8 }
+    })
+  );
+  const activeItem = activeItemId === null ? null : state.items[activeItemId];
   const activeContainerId =
-    activeItemId === null ? null : findItemContainer(state, activeItemId)
+    activeItemId === null ? null : findItemContainer(state, activeItemId);
 
   function handleDragStart(event: DragStartEvent) {
-    setActiveItemId(getItemId(event.active))
+    setActiveItemId(getItemId(event.active));
   }
 
   function handleDragEnd(event: DragEndEvent) {
-    const action = createMoveAction(stateRef.current, event)
+    const action = createMoveAction(stateRef.current, event);
 
-    setActiveItemId(null)
+    setActiveItemId(null);
 
     if (action !== null) {
-      dispatch(action)
+      dispatch(action);
     }
   }
 
@@ -112,80 +112,80 @@ export function TierListDragContext({
         {activeItem ? renderOverlay(activeItem, activeContainerId) : null}
       </DragOverlay>
     </DndContext>
-  )
+  );
 }
 
 const tierListCollisionDetection: CollisionDetection = (args) => {
-  const pointerCollisions = pointerWithin(args)
+  const pointerCollisions = pointerWithin(args);
 
   if (pointerCollisions.length > 0) {
     const itemCollisions = pointerCollisions.filter(({ id }) =>
-      isNonActiveItemCollision(args, id),
-    )
+      isNonActiveItemCollision(args, id)
+    );
 
     if (itemCollisions.length > 0) {
-      return itemCollisions
+      return itemCollisions;
     }
 
     const emptyContainerCollisions = pointerCollisions.filter(({ id }) => {
-      const data = getDroppableData(args, id)
-      return data?.kind === 'container' && data.itemCount === 0
-    })
+      const data = getDroppableData(args, id);
+      return data?.kind === "container" && data.itemCount === 0;
+    });
 
     if (emptyContainerCollisions.length > 0) {
-      return emptyContainerCollisions
+      return emptyContainerCollisions;
     }
 
     const pointerContainerIds = new Set(
       pointerCollisions.flatMap(({ id }) => {
-        const data = getDroppableData(args, id)
-        return data?.kind === 'container' ? [data.containerId] : []
-      }),
-    )
+        const data = getDroppableData(args, id);
+        return data?.kind === "container" ? [data.containerId] : [];
+      })
+    );
     const closestItemCollisions = closestCorners(args).filter(({ id }) =>
-      isNonActiveItemCollision(args, id, pointerContainerIds),
-    )
+      isNonActiveItemCollision(args, id, pointerContainerIds)
+    );
 
     if (closestItemCollisions.length > 0) {
-      return closestItemCollisions
+      return closestItemCollisions;
     }
 
-    return pointerCollisions
+    return pointerCollisions;
   }
 
-  const rectCollisions = rectIntersection(args)
+  const rectCollisions = rectIntersection(args);
 
   if (rectCollisions.length > 0) {
-    return rectCollisions
+    return rectCollisions;
   }
 
-  return closestCorners(args)
-}
+  return closestCorners(args);
+};
 
 function getDroppableData(
   args: Parameters<CollisionDetection>[0],
-  id: Parameters<CollisionDetection>[0]['active']['id'],
+  id: Parameters<CollisionDetection>[0]["active"]["id"]
 ): DragData | null {
   const container = args.droppableContainers.find(
-    (droppable) => droppable.id === id,
-  )
+    (droppable) => droppable.id === id
+  );
 
-  return readDragData(container?.data.current)
+  return readDragData(container?.data.current);
 }
 
 function isNonActiveItemCollision(
   args: Parameters<CollisionDetection>[0],
-  id: Parameters<CollisionDetection>[0]['active']['id'],
-  allowedContainerIds?: Set<string>,
+  id: Parameters<CollisionDetection>[0]["active"]["id"],
+  allowedContainerIds?: Set<string>
 ): boolean {
-  const data = getDroppableData(args, id)
+  const data = getDroppableData(args, id);
 
   return (
     id !== args.active.id &&
-    data?.kind === 'item' &&
+    data?.kind === "item" &&
     (allowedContainerIds === undefined ||
       allowedContainerIds.has(data.containerId))
-  )
+  );
 }
 
 export function SortableDropZone({
@@ -193,22 +193,22 @@ export function SortableDropZone({
   itemIds,
   ariaLabel,
   className,
-  children,
+  children
 }: {
-  containerId: string
-  itemIds: string[]
-  ariaLabel: string
-  className: string
-  children: ReactNode
+  containerId: string;
+  itemIds: string[];
+  ariaLabel: string;
+  className: string;
+  children: ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: containerId,
     data: {
-      kind: 'container',
+      kind: "container",
       containerId,
-      itemCount: itemIds.length,
-    } satisfies DragContainerData,
-  })
+      itemCount: itemIds.length
+    } satisfies DragContainerData
+  });
 
   return (
     <SortableContext
@@ -220,22 +220,22 @@ export function SortableDropZone({
         ref={setNodeRef}
         aria-label={ariaLabel}
         className={className}
-        data-over={isOver ? 'true' : undefined}
+        data-over={isOver ? "true" : undefined}
       >
         {children}
       </div>
     </SortableContext>
-  )
+  );
 }
 
 export function SortableItem({
   itemId,
   containerId,
-  children,
+  children
 }: {
-  itemId: string
-  containerId: string
-  children: (bindings: SortableItemBindings) => ReactNode
+  itemId: string;
+  containerId: string;
+  children: (bindings: SortableItemBindings) => ReactNode;
 }) {
   const {
     attributes,
@@ -243,15 +243,15 @@ export function SortableItem({
     setNodeRef,
     transform,
     transition,
-    isDragging,
+    isDragging
   } = useSortable({
     id: itemId,
     data: {
-      kind: 'item',
+      kind: "item",
       itemId,
-      containerId,
-    } satisfies DragItemData,
-  })
+      containerId
+    } satisfies DragItemData
+  });
 
   return (
     <>
@@ -261,165 +261,165 @@ export function SortableItem({
         setNodeRef,
         style: {
           transform: CSS.Transform.toString(transform),
-          transition,
+          transition
         },
-        isDragging,
+        isDragging
       })}
     </>
-  )
+  );
 }
 
 function createMoveAction(
   state: TierListState,
-  event: DragEndEvent,
+  event: DragEndEvent
 ): TierListAction | null {
-  const { active, over } = event
-  const itemId = getItemId(active)
+  const { active, over } = event;
+  const itemId = getItemId(active);
 
   if (itemId === null || !state.items[itemId] || over === null) {
-    return null
+    return null;
   }
 
-  const fromContainerId = findItemContainer(state, itemId)
-  const toContainerId = getContainerId(over)
+  const fromContainerId = findItemContainer(state, itemId);
+  const toContainerId = getContainerId(over);
 
   if (fromContainerId === null || toContainerId === null) {
-    return null
+    return null;
   }
 
-  const destinationItemIds = getContainerItemIds(state, toContainerId)
-  const overItemId = getItemId(over)
-  let toIndex = destinationItemIds.length
+  const destinationItemIds = getContainerItemIds(state, toContainerId);
+  const overItemId = getItemId(over);
+  let toIndex = destinationItemIds.length;
 
   if (overItemId !== null && overItemId !== itemId) {
-    const overIndex = destinationItemIds.indexOf(overItemId)
+    const overIndex = destinationItemIds.indexOf(overItemId);
 
     if (overIndex >= 0) {
       toIndex =
         fromContainerId === toContainerId
           ? overIndex
-          : overIndex + (isAfterOverItem(event) ? 1 : 0)
+          : overIndex + (isAfterOverItem(event) ? 1 : 0);
     }
   } else if (fromContainerId === toContainerId) {
     toIndex = getSameContainerFallbackIndex(
       event,
       destinationItemIds.length,
-      destinationItemIds.indexOf(itemId),
-    )
+      destinationItemIds.indexOf(itemId)
+    );
   }
 
   if (fromContainerId === toContainerId) {
-    const fromIndex = destinationItemIds.indexOf(itemId)
+    const fromIndex = destinationItemIds.indexOf(itemId);
 
     if (fromIndex === -1 || fromIndex === toIndex) {
-      return null
+      return null;
     }
   }
 
   return {
-    type: 'MOVE_ITEM',
+    type: "MOVE_ITEM",
     itemId,
     toContainerId,
-    toIndex,
-  }
+    toIndex
+  };
 }
 
 function getItemId(
-  draggable: DragEndEvent['active'] | NonNullable<DragEndEvent['over']>,
+  draggable: DragEndEvent["active"] | NonNullable<DragEndEvent["over"]>
 ): string | null {
-  const data = getDragData(draggable)
-  return data?.kind === 'item' ? String(draggable.id) : null
+  const data = getDragData(draggable);
+  return data?.kind === "item" ? String(draggable.id) : null;
 }
 
 function getContainerId(
-  draggable: DragEndEvent['active'] | NonNullable<DragEndEvent['over']>,
+  draggable: DragEndEvent["active"] | NonNullable<DragEndEvent["over"]>
 ): string | null {
-  const data = getDragData(draggable)
+  const data = getDragData(draggable);
 
-  if (data?.kind === 'container' || data?.kind === 'item') {
-    return data.containerId
+  if (data?.kind === "container" || data?.kind === "item") {
+    return data.containerId;
   }
 
-  return null
+  return null;
 }
 
 function getDragData(
-  draggable: DragEndEvent['active'] | NonNullable<DragEndEvent['over']>,
+  draggable: DragEndEvent["active"] | NonNullable<DragEndEvent["over"]>
 ): DragData | null {
-  return readDragData(draggable.data.current)
+  return readDragData(draggable.data.current);
 }
 
 function getSameContainerFallbackIndex(
   event: DragEndEvent,
   itemCount: number,
-  fromIndex: number,
+  fromIndex: number
 ): number {
-  const initialRect = event.active.rect.current.initial
-  const translatedRect = event.active.rect.current.translated
+  const initialRect = event.active.rect.current.initial;
+  const translatedRect = event.active.rect.current.translated;
 
   if (initialRect === null || translatedRect === null || fromIndex < 0) {
-    return itemCount
+    return itemCount;
   }
 
-  const deltaX = translatedRect.left - initialRect.left
-  const deltaY = translatedRect.top - initialRect.top
+  const deltaX = translatedRect.left - initialRect.left;
+  const deltaY = translatedRect.top - initialRect.top;
 
   if (Math.abs(deltaY) > initialRect.height / 2) {
-    return deltaY < 0 ? 0 : itemCount
+    return deltaY < 0 ? 0 : itemCount;
   }
 
   if (Math.abs(deltaX) > initialRect.width / 4) {
-    return deltaX < 0 ? 0 : itemCount
+    return deltaX < 0 ? 0 : itemCount;
   }
 
-  return fromIndex
+  return fromIndex;
 }
 
 function readDragData(data: unknown): DragData | null {
-  if (typeof data !== 'object' || data === null) {
-    return null
+  if (typeof data !== "object" || data === null) {
+    return null;
   }
 
-  const record = data as Record<string, unknown>
+  const record = data as Record<string, unknown>;
 
   if (
-    record.kind === 'item' &&
-    typeof record.itemId === 'string' &&
-    typeof record.containerId === 'string'
+    record.kind === "item" &&
+    typeof record.itemId === "string" &&
+    typeof record.containerId === "string"
   ) {
     return {
-      kind: 'item',
+      kind: "item",
       itemId: record.itemId,
-      containerId: record.containerId,
-    }
+      containerId: record.containerId
+    };
   }
 
-  if (record.kind === 'container' && typeof record.containerId === 'string') {
+  if (record.kind === "container" && typeof record.containerId === "string") {
     return {
-      kind: 'container',
+      kind: "container",
       containerId: record.containerId,
-      itemCount: typeof record.itemCount === 'number' ? record.itemCount : 0,
-    }
+      itemCount: typeof record.itemCount === "number" ? record.itemCount : 0
+    };
   }
 
-  return null
+  return null;
 }
 
 function isAfterOverItem(event: DragEndEvent): boolean {
   if (event.over === null || event.active.rect.current.translated === null) {
-    return false
+    return false;
   }
 
-  const activeRect = event.active.rect.current.translated
-  const overRect = event.over.rect
-  const activeCenterX = activeRect.left + activeRect.width / 2
-  const activeCenterY = activeRect.top + activeRect.height / 2
-  const overCenterX = overRect.left + overRect.width / 2
-  const overCenterY = overRect.top + overRect.height / 2
+  const activeRect = event.active.rect.current.translated;
+  const overRect = event.over.rect;
+  const activeCenterX = activeRect.left + activeRect.width / 2;
+  const activeCenterY = activeRect.top + activeRect.height / 2;
+  const overCenterX = overRect.left + overRect.width / 2;
+  const overCenterY = overRect.top + overRect.height / 2;
 
   if (Math.abs(activeCenterY - overCenterY) > overRect.height / 2) {
-    return activeCenterY > overCenterY
+    return activeCenterY > overCenterY;
   }
 
-  return activeCenterX > overCenterX
+  return activeCenterX > overCenterX;
 }
