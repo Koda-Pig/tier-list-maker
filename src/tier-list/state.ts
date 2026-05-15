@@ -29,6 +29,10 @@ export type TierListAction =
     }
   | { type: "RESET" };
 
+export type TierListReducerDeps = {
+  createItemId?: () => string;
+};
+
 export const DEFAULT_TITLE = "Untitled tier list";
 export const TITLE_MAX_LENGTH = 60;
 export const ITEM_LABEL_MAX_LENGTH = 50;
@@ -156,157 +160,163 @@ function sortTiersByPaletteOrder(tiers: Tier[]): Tier[] {
   );
 }
 
-export function tierListReducer(
-  state: TierListState,
-  action: TierListAction
-): TierListState {
-  switch (action.type) {
-    case "SET_TITLE":
-      return {
-        ...state,
-        title: sanitizeTitle(action.title)
-      };
-    case "ADD_ITEM": {
-      const label = sanitizeItemLabel(action.label);
+export function createTierListReducer({
+  createItemId = () => crypto.randomUUID()
+}: TierListReducerDeps = {}) {
+  return function tierListReducer(
+    state: TierListState,
+    action: TierListAction
+  ): TierListState {
+    switch (action.type) {
+      case "SET_TITLE":
+        return {
+          ...state,
+          title: sanitizeTitle(action.title)
+        };
+      case "ADD_ITEM": {
+        const label = sanitizeItemLabel(action.label);
 
-      if (label.length === 0) {
-        return state;
-      }
-
-      const id = crypto.randomUUID();
-
-      return {
-        ...state,
-        items: {
-          ...state.items,
-          [id]: { id, label }
-        },
-        unranked: [...state.unranked, id]
-      };
-    }
-    case "REMOVE_ITEM": {
-      if (!state.items[action.itemId]) {
-        return state;
-      }
-
-      const items = { ...state.items };
-      delete items[action.itemId];
-
-      return {
-        ...state,
-        items,
-        unranked: state.unranked.filter((itemId) => itemId !== action.itemId),
-        placements: Object.fromEntries(
-          Object.entries(state.placements).map(([tierId, itemIds]) => [
-            tierId,
-            itemIds.filter((itemId) => itemId !== action.itemId)
-          ])
-        )
-      };
-    }
-    case "UNRANK_ITEM": {
-      if (!state.items[action.itemId]) {
-        return state;
-      }
-
-      // Button-based unrank has no drop position, so it returns the item to
-      // the end of the staging pool. Drag-to-unrank uses MOVE_ITEM with an index.
-      const fromContainerId = findItemContainer(state, action.itemId);
-
-      if (
-        fromContainerId === null ||
-        fromContainerId === UNRANKED_CONTAINER_ID
-      ) {
-        return state;
-      }
-
-      return {
-        ...state,
-        unranked: [...state.unranked, action.itemId],
-        placements: Object.fromEntries(
-          Object.entries(state.placements).map(([tierId, itemIds]) => [
-            tierId,
-            itemIds.filter((itemId) => itemId !== action.itemId)
-          ])
-        )
-      };
-    }
-    case "MOVE_ITEM": {
-      if (
-        !state.items[action.itemId] ||
-        !isKnownContainer(state, action.toContainerId)
-      ) {
-        return state;
-      }
-
-      const fromContainerId = findItemContainer(state, action.itemId);
-
-      if (fromContainerId === null) {
-        return state;
-      }
-
-      let unranked =
-        fromContainerId === UNRANKED_CONTAINER_ID
-          ? state.unranked.filter((itemId) => itemId !== action.itemId)
-          : state.unranked;
-      const placements = Object.fromEntries(
-        Object.entries(state.placements).map(([tierId, itemIds]) => [
-          tierId,
-          tierId === fromContainerId
-            ? itemIds.filter((itemId) => itemId !== action.itemId)
-            : itemIds
-        ])
-      );
-
-      if (action.toContainerId === UNRANKED_CONTAINER_ID) {
-        unranked = insertAt(unranked, action.itemId, action.toIndex);
-      } else {
-        placements[action.toContainerId] = insertAt(
-          placements[action.toContainerId],
-          action.itemId,
-          action.toIndex
-        );
-      }
-
-      return {
-        ...state,
-        unranked,
-        placements
-      };
-    }
-    case "ADD_TIER": {
-      const tier = getNextAddableTier(state);
-
-      if (tier === null) {
-        return state;
-      }
-
-      return {
-        ...state,
-        tiers: sortTiersByPaletteOrder([...state.tiers, { ...tier }]),
-        placements: {
-          ...state.placements,
-          [tier.id]: state.placements[tier.id] ?? []
+        if (label.length === 0) {
+          return state;
         }
-      };
-    }
-    case "REMOVE_TIER": {
-      if (!canRemoveTier(state, action.tierId)) {
-        return state;
+
+        const id = createItemId();
+
+        return {
+          ...state,
+          items: {
+            ...state.items,
+            [id]: { id, label }
+          },
+          unranked: [...state.unranked, id]
+        };
       }
+      case "REMOVE_ITEM": {
+        if (!state.items[action.itemId]) {
+          return state;
+        }
 
-      const placements = { ...state.placements };
-      delete placements[action.tierId];
+        const items = { ...state.items };
+        delete items[action.itemId];
 
-      return {
-        ...state,
-        tiers: state.tiers.filter((tier) => tier.id !== action.tierId),
-        placements
-      };
+        return {
+          ...state,
+          items,
+          unranked: state.unranked.filter((itemId) => itemId !== action.itemId),
+          placements: Object.fromEntries(
+            Object.entries(state.placements).map(([tierId, itemIds]) => [
+              tierId,
+              itemIds.filter((itemId) => itemId !== action.itemId)
+            ])
+          )
+        };
+      }
+      case "UNRANK_ITEM": {
+        if (!state.items[action.itemId]) {
+          return state;
+        }
+
+        // Button-based unrank has no drop position, so it returns the item to
+        // the end of the staging pool. Drag-to-unrank uses MOVE_ITEM with an index.
+        const fromContainerId = findItemContainer(state, action.itemId);
+
+        if (
+          fromContainerId === null ||
+          fromContainerId === UNRANKED_CONTAINER_ID
+        ) {
+          return state;
+        }
+
+        return {
+          ...state,
+          unranked: [...state.unranked, action.itemId],
+          placements: Object.fromEntries(
+            Object.entries(state.placements).map(([tierId, itemIds]) => [
+              tierId,
+              itemIds.filter((itemId) => itemId !== action.itemId)
+            ])
+          )
+        };
+      }
+      case "MOVE_ITEM": {
+        if (
+          !state.items[action.itemId] ||
+          !isKnownContainer(state, action.toContainerId)
+        ) {
+          return state;
+        }
+
+        const fromContainerId = findItemContainer(state, action.itemId);
+
+        if (fromContainerId === null) {
+          return state;
+        }
+
+        let unranked =
+          fromContainerId === UNRANKED_CONTAINER_ID
+            ? state.unranked.filter((itemId) => itemId !== action.itemId)
+            : state.unranked;
+        const placements = Object.fromEntries(
+          Object.entries(state.placements).map(([tierId, itemIds]) => [
+            tierId,
+            tierId === fromContainerId
+              ? itemIds.filter((itemId) => itemId !== action.itemId)
+              : itemIds
+          ])
+        );
+
+        if (action.toContainerId === UNRANKED_CONTAINER_ID) {
+          unranked = insertAt(unranked, action.itemId, action.toIndex);
+        } else {
+          placements[action.toContainerId] = insertAt(
+            placements[action.toContainerId],
+            action.itemId,
+            action.toIndex
+          );
+        }
+
+        return {
+          ...state,
+          unranked,
+          placements
+        };
+      }
+      case "ADD_TIER": {
+        const tier = getNextAddableTier(state);
+
+        if (tier === null) {
+          return state;
+        }
+
+        return {
+          ...state,
+          tiers: sortTiersByPaletteOrder([...state.tiers, { ...tier }]),
+          placements: {
+            ...state.placements,
+            [tier.id]: state.placements[tier.id] ?? []
+          }
+        };
+      }
+      case "REMOVE_TIER": {
+        if (!canRemoveTier(state, action.tierId)) {
+          return state;
+        }
+
+        const placements = { ...state.placements };
+        delete placements[action.tierId];
+
+        return {
+          ...state,
+          tiers: state.tiers.filter((tier) => tier.id !== action.tierId),
+          placements
+        };
+      }
+      case "RESET":
+        return createInitialTierListState();
+      default:
+        return state;
     }
-    case "RESET":
-      return createInitialTierListState();
-    default:
-      return state;
-  }
+  };
 }
+
+export const tierListReducer = createTierListReducer();

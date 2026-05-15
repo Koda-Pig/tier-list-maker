@@ -1,20 +1,35 @@
 import { test, expect } from "@playwright/test";
 
-test("has title", async ({ page }) => {
-  await page.goto("https://playwright.dev/");
+test("updates document title from tier list title input", async ({ page }) => {
+  await page.goto("/");
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
+  const titleInput = page.getByLabel("Tier list title");
+  await titleInput.fill("Arcade rankings");
+
+  await expect(page).toHaveTitle("Arcade rankings");
 });
 
-test("get started link", async ({ page }) => {
-  await page.goto("https://playwright.dev/");
+test("adds item and reset clears ranked data", async ({ page }) => {
+  await page.goto("/");
 
-  // Click the get started link.
-  await page.getByRole("link", { name: "Get started" }).click();
+  await page.getByLabel("Item name").fill("Chess");
+  await page.getByRole("button", { name: "Add" }).click();
 
-  // Expects page to have a heading with the name of Installation.
-  await expect(
-    page.getByRole("heading", { name: "Installation" })
-  ).toBeVisible();
+  await expect(page.getByText("1 items")).toBeVisible();
+
+  await page.getByRole("button", { name: "Reset" }).click();
+  await page.getByRole("button", { name: "Reset list" }).click();
+
+  await expect(page.getByText("0 items", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Item name")).toHaveValue("");
+});
+
+test("adds and removes an optional empty tier", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "+ Tier" }).click();
+  await expect(page.getByLabel("Remove empty D tier")).toBeVisible();
+
+  await page.getByLabel("Remove empty D tier").click();
+  await expect(page.getByLabel("Remove empty D tier")).toHaveCount(0);
 });
