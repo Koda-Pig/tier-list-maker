@@ -17,9 +17,13 @@ Convert exploration findings into a numbered set of deepening opportunities that
 
 ## Acceptance criteria
 
-- [ ] A numbered candidate list is produced, with each entry covering files involved, problem, solution, and benefits.
-- [ ] Benefits are framed in locality, leverage, and test-surface improvements rather than implementation detail.
-- [ ] The slice ends with an explicit user-choice checkpoint that selects one candidate for deeper design work.
+- [x] A numbered candidate list is produced, with each entry covering files involved, problem, solution, and benefits.
+- [x] Benefits are framed in locality, leverage, and test-surface improvements rather than implementation detail.
+- [x] The slice ends with an explicit user-choice checkpoint that selects one candidate for deeper design work.
+
+## Output
+
+- `issues/002-deepening-candidates-report-and-selection-handoff-output.md`
 
 ## Blocked by
 

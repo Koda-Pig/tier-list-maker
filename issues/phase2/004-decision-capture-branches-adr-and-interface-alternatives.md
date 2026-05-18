@@ -17,9 +17,13 @@ Add the two post-grilling decision branches: (1) record or reopen ADRs when a re
 
 ## Acceptance criteria
 
-- [ ] Rejected candidates with durable, load-bearing rationale can be captured as ADR decisions when appropriate.
-- [ ] A clear path exists to explore and compare interface alternatives when additional design pressure-testing is needed.
-- [ ] The output distinguishes ephemeral deferrals from durable architectural decisions so future reviews avoid repeating dead ends.
+- [x] Rejected candidates with durable, load-bearing rationale can be captured as ADR decisions when appropriate.
+- [x] A clear path exists to explore and compare interface alternatives when additional design pressure-testing is needed.
+- [x] The output distinguishes ephemeral deferrals from durable architectural decisions so future reviews avoid repeating dead ends.
+
+## Output
+
+- `issues/004-decision-capture-branches-adr-and-interface-alternatives-output.md`
 
 ## Blocked by
 

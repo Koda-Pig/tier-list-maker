@@ -17,9 +17,13 @@ Run the interactive deepening design conversation for the selected candidate, wa
 
 ## Acceptance criteria
 
-- [ ] The selected candidate is explored through a structured grilling loop that resolves core design branches.
-- [ ] The conversation explicitly addresses constraints, dependencies, seam shape, and test survivability.
-- [ ] Domain terminology changes discovered during the loop are captured in the project context documentation.
+- [x] The selected candidate is explored through a structured grilling loop that resolves core design branches.
+- [x] The conversation explicitly addresses constraints, dependencies, seam shape, and test survivability.
+- [x] Domain terminology changes discovered during the loop are captured in the project context documentation.
+
+## Output
+
+- `issues/003-selected-candidate-grilling-loop-and-context-updates-output.md`
 
 ## Blocked by
 

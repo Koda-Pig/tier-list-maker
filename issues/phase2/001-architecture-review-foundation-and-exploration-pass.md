@@ -16,9 +16,13 @@ Create the first end-to-end architecture deepening pass that establishes shared 
 
 ## Acceptance criteria
 
-- [ ] The review process explicitly uses the architecture glossary terms and avoids drift in terminology.
-- [ ] Exploration output captures concrete friction points, including at least shallow-module signals, seam leaks, and test-surface pain.
-- [ ] Deletion-test analysis is documented for suspected shallow modules, with clear rationale for why each module does or does not earn its keep.
+- [x] The review process explicitly uses the architecture glossary terms and avoids drift in terminology.
+- [x] Exploration output captures concrete friction points, including at least shallow-module signals, seam leaks, and test-surface pain.
+- [x] Deletion-test analysis is documented for suspected shallow modules, with clear rationale for why each module does or does not earn its keep.
+
+## Output
+
+- `issues/001-architecture-review-foundation-and-exploration-pass-output.md`
 
 ## Blocked by
 

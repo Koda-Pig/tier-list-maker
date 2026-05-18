@@ -27,8 +27,6 @@ import {
   type ReactNode
 } from "react";
 import {
-  findItemContainer,
-  getContainerItemIds,
   type Item,
   type TierListAction,
   type TierListState
@@ -60,11 +58,18 @@ export type SortableItemBindings = {
 export function TierListDragContext({
   state,
   dispatch,
+  resolveItemContainer,
+  resolveContainerItemIds,
   renderOverlay,
   children
 }: {
   state: TierListState;
   dispatch: (action: TierListAction) => void;
+  resolveItemContainer: (state: TierListState, itemId: string) => string | null;
+  resolveContainerItemIds: (
+    state: TierListState,
+    containerId: string
+  ) => string[];
   renderOverlay: (item: Item, containerId: string | null) => ReactNode;
   children: ReactNode;
 }) {
@@ -83,14 +88,19 @@ export function TierListDragContext({
   );
   const activeItem = activeItemId === null ? null : state.items[activeItemId];
   const activeContainerId =
-    activeItemId === null ? null : findItemContainer(state, activeItemId);
+    activeItemId === null ? null : resolveItemContainer(state, activeItemId);
 
   function handleDragStart(event: DragStartEvent) {
     setActiveItemId(getItemId(event.active));
   }
 
   function handleDragEnd(event: DragEndEvent) {
-    const action = createMoveAction(stateRef.current, event);
+    const action = createMoveAction(
+      stateRef.current,
+      event,
+      resolveItemContainer,
+      resolveContainerItemIds
+    );
 
     setActiveItemId(null);
 
@@ -271,7 +281,12 @@ export function SortableItem({
 
 function createMoveAction(
   state: TierListState,
-  event: DragEndEvent
+  event: DragEndEvent,
+  resolveItemContainer: (state: TierListState, itemId: string) => string | null,
+  resolveContainerItemIds: (
+    state: TierListState,
+    containerId: string
+  ) => string[]
 ): TierListAction | null {
   const { active, over } = event;
   const itemId = getItemId(active);
@@ -280,14 +295,14 @@ function createMoveAction(
     return null;
   }
 
-  const fromContainerId = findItemContainer(state, itemId);
+  const fromContainerId = resolveItemContainer(state, itemId);
   const toContainerId = getContainerId(over);
 
   if (fromContainerId === null || toContainerId === null) {
     return null;
   }
 
-  const destinationItemIds = getContainerItemIds(state, toContainerId);
+  const destinationItemIds = resolveContainerItemIds(state, toContainerId);
   const overItemId = getItemId(over);
   let toIndex = destinationItemIds.length;
 
