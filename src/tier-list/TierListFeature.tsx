@@ -40,10 +40,14 @@ import {
 } from "./state";
 
 type TierListFeatureProps = {
+  isPresentMode?: boolean;
   onTitleChange?: (title: string) => void;
 };
 
-export function TierListFeature({ onTitleChange }: TierListFeatureProps) {
+export function TierListFeature({
+  isPresentMode = false,
+  onTitleChange
+}: TierListFeatureProps) {
   const [state, dispatch] = useReducer(tierListReducer, initialTierListState);
   const [newItemLabel, setNewItemLabel] = useState("");
   const newItemInputRef = useRef<HTMLInputElement>(null);
@@ -82,6 +86,7 @@ export function TierListFeature({ onTitleChange }: TierListFeatureProps) {
 
   return (
     <>
+      {!isPresentMode ? (
       <header className="rounded-lg border border-slate-300/70 bg-white/85 p-5 shadow-xl shadow-slate-300/35 backdrop-blur transition-colors dark:border-white/10 dark:bg-slate-950/80 dark:shadow-black/30">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
@@ -160,6 +165,7 @@ export function TierListFeature({ onTitleChange }: TierListFeatureProps) {
           </form>
         </div>
       </header>
+      ) : null}
 
       <section
         aria-label="Ranking progress"
@@ -202,11 +208,12 @@ export function TierListFeature({ onTitleChange }: TierListFeatureProps) {
               tier={tier}
               itemIds={state.placements[tier.id] ?? []}
               items={state.items}
-              canRemove={canRemoveTier(state, tier.id)}
+              canRemove={!isPresentMode && canRemoveTier(state, tier.id)}
               onRemoveTier={() =>
                 dispatch({ type: "REMOVE_TIER", tierId: tier.id })
               }
               onUnrank={(itemId) => dispatch({ type: "UNRANK_ITEM", itemId })}
+              isPresentMode={isPresentMode}
             />
           ))}
         </section>
@@ -214,6 +221,7 @@ export function TierListFeature({ onTitleChange }: TierListFeatureProps) {
         <UnrankedSection
           itemIds={state.unranked}
           items={state.items}
+          isPresentMode={isPresentMode}
           onRemove={(itemId) => dispatch({ type: "REMOVE_ITEM", itemId })}
         />
       </TierListDragContext>
@@ -269,21 +277,23 @@ function ItemPill({
       {...(drag?.listeners ?? {})}
     >
       <span className="truncate">{item.label}</span>
-      <button
-        type="button"
-        aria-label={removeLabel ?? `Remove ${item.label}`}
-        className={[
-          "-mr-1 grid size-6 shrink-0 place-items-center rounded-full text-lg leading-none outline-none transition focus:ring-2",
-          removeControlClass
-        ].join(" ")}
-        onPointerDown={(event) => event.stopPropagation()}
-        onClick={(event) => {
-          event.stopPropagation();
-          onRemove?.();
-        }}
-      >
-        <X aria-hidden="true" className="size-4" strokeWidth={2.5} />
-      </button>
+      {onRemove ? (
+        <button
+          type="button"
+          aria-label={removeLabel ?? `Remove ${item.label}`}
+          className={[
+            "-mr-1 grid size-6 shrink-0 place-items-center rounded-full text-lg leading-none outline-none transition focus:ring-2",
+            removeControlClass
+          ].join(" ")}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            onRemove();
+          }}
+        >
+          <X aria-hidden="true" className="size-4" strokeWidth={2.5} />
+        </button>
+      ) : null}
     </span>
   );
 }
@@ -298,8 +308,8 @@ function SortableItemPill({
   item: Item;
   containerId: string;
   tone: ItemPillTone;
-  onRemove: () => void;
-  removeLabel: string;
+  onRemove?: () => void;
+  removeLabel?: string;
 }) {
   return (
     <SortableItem itemId={item.id} containerId={containerId}>
@@ -322,7 +332,8 @@ function TierRow({
   items,
   canRemove,
   onRemoveTier,
-  onUnrank
+  onUnrank,
+  isPresentMode = false
 }: {
   tier: Tier;
   itemIds: string[];
@@ -330,6 +341,7 @@ function TierRow({
   canRemove: boolean;
   onRemoveTier: () => void;
   onUnrank: (itemId: string) => void;
+  isPresentMode?: boolean;
 }) {
   return (
     <article className="grid grid-cols-[3.5rem_minmax(0,1fr)] overflow-hidden rounded-lg border border-slate-300/70 bg-white/80 transition-colors dark:border-white/10 dark:bg-slate-950/75 sm:grid-cols-[4.5rem_minmax(0,1fr)]">
@@ -369,7 +381,9 @@ function TierRow({
               item={item}
               containerId={tier.id}
               tone={{ kind: "tier", color: tier.color }}
-              onRemove={() => onUnrank(item.id)}
+              onRemove={
+                isPresentMode ? undefined : () => onUnrank(item.id)
+              }
               removeLabel={`Move ${item.label} back to unranked`}
             />
           );
@@ -382,11 +396,13 @@ function TierRow({
 function UnrankedSection({
   itemIds,
   items,
-  onRemove
+  onRemove,
+  isPresentMode = false
 }: {
   itemIds: string[];
   items: Record<string, Item>;
   onRemove: (itemId: string) => void;
+  isPresentMode?: boolean;
 }) {
   return (
     <section className="rounded-lg border border-slate-300/70 bg-white/80 p-5 transition-colors dark:border-white/10 dark:bg-slate-950/70">
@@ -417,7 +433,9 @@ function UnrankedSection({
               item={item}
               containerId={UNRANKED_CONTAINER_ID}
               tone={{ kind: "neutral" }}
-              onRemove={() => onRemove(item.id)}
+              onRemove={
+                isPresentMode ? undefined : () => onRemove(item.id)
+              }
               removeLabel={`Remove ${item.label}`}
             />
           );
